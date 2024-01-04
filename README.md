@@ -7,6 +7,7 @@ Pytorch implementation of paper:
 ## Content
 
 - [Data Preparation](#data-preparation)
+- [Citation](#citation)
   
 ## Data Preparation
 
