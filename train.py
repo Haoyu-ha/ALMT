@@ -54,7 +54,9 @@ def main():
 
     for epoch in range(1, opt.n_epochs+1):
         train(model, dataLoader['train'], optimizer, loss_fn, epoch, writer, metrics)
-        evaluate(model, dataLoader['test'], optimizer, loss_fn, epoch, writer, save_path, metrics, opt)
+        evaluate(model, dataLoader['valid'], optimizer, loss_fn, epoch, writer, save_path, metrics)
+        if opt.is_test is not None:
+            test(model, dataLoader['test'], optimizer, loss_fn, epoch, writer, metrics)
         scheduler_warmup.step()
     writer.close()
 
@@ -99,8 +101,45 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
 
 
 
-def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, metrics, opt):
+def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, metrics):
     test_pbar = tqdm(enumerate(eval_loader))
+
+    losses = AverageMeter()
+    y_pred, y_true = [], []
+
+    model.eval()
+    with torch.no_grad():
+        for cur_iter, data in test_pbar:
+            img, audio, text = data['vision'].to(device), data['audio'].to(device), data['text'].to(device)
+            label = data['labels']['M'].to(device)
+            label = label.view(-1, 1)
+            batchsize = img.shape[0]
+
+            cls_output = model(img, audio, text)
+
+            loss = loss_fn(cls_output, label)
+
+            y_pred.append(cls_output.cpu())
+            y_true.append(label.cpu())
+
+            losses.update(loss.item(), batchsize)
+
+            test_pbar.set_description('eval')
+            test_pbar.set_postfix({'epoch': '{}'.format(epoch),
+                                   'loss': '{:.5f}'.format(losses.value_avg),
+                                   'lr:': '{:.2e}'.format(optimizer.state_dict()['param_groups'][0]['lr'])})
+
+        pred, true = torch.cat(y_pred), torch.cat(y_true)
+        test_results = metrics(pred, true)
+        print(test_results)
+
+        writer.add_scalar('evaluate/loss', losses.value_avg, epoch)
+
+        save_model(save_path, epoch, model, optimizer)
+
+
+def test(model, test_loader, optimizer, loss_fn, epoch, writer, metrics):
+    test_pbar = tqdm(enumerate(test_loader))
 
     losses = AverageMeter()
     y_pred, y_true = [], []
@@ -131,8 +170,7 @@ def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, m
         test_results = metrics(pred, true)
         print(test_results)
 
-        save_model(save_path, epoch, model, optimizer)
-
+        writer.add_scalar('test/loss', losses.value_avg, epoch)
 
 if __name__ == '__main__':
     main()

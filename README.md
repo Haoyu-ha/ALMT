@@ -7,11 +7,19 @@ Pytorch implementation of paper:
 ## Content
 
 - [Data Preparation](#data-preparation)
+- [Training](#Training)
 - [Citation](#citation)
   
 ## Data Preparation
 
 MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA)
+
+## Training
+You can quickly run the code with the following command (you can refer to opt.py to modify more hyperparameters):
+### MOSI
+```
+python train.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_DEMO --datasetName mosi --dataPath /mnt/data4/zhanghaoyu/unaligned_50.pkl --fusion_layer_depth 2 --is_test 1
+```
 
 ## Citation
 

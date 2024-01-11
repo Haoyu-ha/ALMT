@@ -39,6 +39,10 @@ def parse_opts():
                  default='ALMT',
                  type=str
                  ),
+           dict(name='--is_test',    
+                 default=1,
+                 type=int
+                 ),
             dict(name='--seed',  # try different seeds
                  default=18,
                  type=int
