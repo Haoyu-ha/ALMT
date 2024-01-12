@@ -6,16 +6,20 @@ Pytorch implementation of paper:
 
 ## Content
 
-- [Data Preparation](#data-preparation)
+- [Data Preparation](#Data-preparation)
+- [Environment](#Environment)
 - [Training](#Training)
-- [Citation](#citation)
+- [Citation](#Citation)
   
 ## Data Preparation
-
 MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA)
 
+## Environment
+The basic training environment for the results in the paper is Pytorch 1.11.0, Python 3.7 with RTX 3090. It should be noted that different hardware and software environments can cause the results to fluctuate.
+
 ## Training
-You can quickly run the code with the following command (you can refer to opt.py to modify more hyperparameters):
+You can quickly run the code with the following command (you can refer to opts.py to modify more hyperparameters):
+
 ### MOSI
 ```
 python train.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_DEMO --datasetName mosi --dataPath ./datasets/unaligned_50.pkl --fusion_layer_depth 2 --is_test 1
