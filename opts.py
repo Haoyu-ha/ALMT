@@ -1,3 +1,9 @@
+'''
+* @name: opts.py
+* @description: Hyperparameter configuration. Note: For hyperparameter settings, please refer to the appendix of the paper.
+'''
+
+
 import argparse
 
 def parse_opts():
@@ -7,7 +13,7 @@ def parse_opts():
             dict(name='--datasetName',        
                  type=str,
                  default='mosi',
-                 help=' '),
+                 help='mosi, mosei or sims'),
             dict(name='--dataPath',
                  default="./datasets/unaligned_50.pkl",
                  type=str,
@@ -27,7 +33,7 @@ def parse_opts():
         ],
         'network': [
             dict(name='--CUDA_VISIBLE_DEVICES',        
-                 default='7',
+                 default='6',
                  type=str),
             dict(name='--fusion_layer_depth',
                  default=2,
@@ -36,7 +42,7 @@ def parse_opts():
 
         'common': [
             dict(name='--project_name',    
-                 default='ALMT',
+                 default='ALMT_Demo',
                  type=str
                  ),
            dict(name='--is_test',    
@@ -84,8 +90,3 @@ def parse_opts():
 
     args = parser.parse_args()
     return args
-
-
-if __name__ == '__main__':
-    opt = parse_opts()
-    print(opt.n_epochs)

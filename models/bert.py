@@ -1,3 +1,9 @@
+'''
+* @name: bert.py
+* @description: Functions of BERT.
+'''
+
+
 import torch
 import torch.nn as nn
 from transformers import BertModel, BertTokenizer, RobertaModel, RobertaTokenizer

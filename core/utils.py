@@ -1,3 +1,9 @@
+'''
+* @name: utils.py
+* @description: Other functions.
+'''
+
+
 import os
 import random
 import numpy as np

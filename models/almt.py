@@ -1,5 +1,5 @@
 '''
-* @name: ALMT
+* @name: almt.py
 * @description: Implementation of ALMT
 '''
 
@@ -32,7 +32,7 @@ class ALMT(nn.Module):
             self.proj_a0 = nn.Linear(33, 128)
             self.proj_v0 = nn.Linear(709, 128)
         else:
-            assert False, "datasetName error"
+            assert False, "DatasetName must be mosi, mosei or sims."
 
 
         self.proj_l = Transformer(num_frames=50, save_hidden=False, token_len=8, dim=128, depth=1, heads=8, mlp_dim=128)
@@ -67,16 +67,17 @@ class ALMT(nn.Module):
 
         h_hyper = self.h_hyper_layer(h_t_list, h_a, h_v, h_hyper)
         feat = self.fusion_layer(h_hyper, h_t_list[-1])[:, 0]
-        cls_output = self.cls_head(feat)
+        output = self.cls_head(feat)
 
-        return cls_output
+        return output
 
 
-def build_model(opt, mode=None):
+def build_model(opt):
     if opt.datasetName == 'sims':
         l_pretrained='bert-base-chinese'
     else:
         l_pretrained='bert-base-uncased'
+
     model = ALMT(dataset = opt.datasetName, fusion_layer_depth=opt.fusion_layer_depth, bert_pretrained = l_pretrained)
 
     return model

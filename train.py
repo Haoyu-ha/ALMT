@@ -46,9 +46,9 @@ def main():
                                  weight_decay=opt.weight_decay)
 
     scheduler_warmup = get_scheduler(optimizer, opt)
-
     loss_fn = torch.nn.MSELoss()
     metrics = MetricsTop().getMetics(opt.datasetName)
+
     writer = SummaryWriter(logdir=log_path)
 
 
@@ -74,9 +74,9 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
         label = label.view(-1, 1)
         batchsize = img.shape[0]
 
-        cls_output = model(img, audio, text)
+        output = model(img, audio, text)
 
-        loss = loss_fn(cls_output, label)
+        loss = loss_fn(output, label)
 
         losses.update(loss.item(), batchsize)
 
@@ -84,7 +84,7 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
         optimizer.step()
         optimizer.zero_grad()
 
-        y_pred.append(cls_output.cpu())
+        y_pred.append(output.cpu())
         y_true.append(label.cpu())
 
         train_pbar.set_description('train')
@@ -115,11 +115,11 @@ def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, m
             label = label.view(-1, 1)
             batchsize = img.shape[0]
 
-            cls_output = model(img, audio, text)
+            output = model(img, audio, text)
 
-            loss = loss_fn(cls_output, label)
+            loss = loss_fn(output, label)
 
-            y_pred.append(cls_output.cpu())
+            y_pred.append(output.cpu())
             y_true.append(label.cpu())
 
             losses.update(loss.item(), batchsize)
@@ -152,11 +152,11 @@ def test(model, test_loader, optimizer, loss_fn, epoch, writer, metrics):
             label = label.view(-1, 1)
             batchsize = img.shape[0]
 
-            cls_output = model(img, audio, text)
+            output = model(img, audio, text)
 
-            loss = loss_fn(cls_output, label)
+            loss = loss_fn(output, label)
 
-            y_pred.append(cls_output.cpu())
+            y_pred.append(output.cpu())
             y_true.append(label.cpu())
 
             losses.update(loss.item(), batchsize)
