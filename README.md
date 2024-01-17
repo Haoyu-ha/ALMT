@@ -4,6 +4,9 @@ Pytorch implementation of paper:
 
 > **Learning Language-guided Adaptive Hyper-modality Representation for Multimodal Sentiment Analysis**
 
+Pytorch implementation of paper based on  [MMSA](https://github.com/thuiar/MMSA)  framework: 
+> **I'm working on it.**
+
 ## Content
 
 - [Data Preparation](#Data-preparation)
