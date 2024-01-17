@@ -23,6 +23,11 @@ The basic training environment for the results in the paper is Pytorch 1.11.0, P
 ## Training
 You can quickly run the code with the following command (you can refer to opts.py to modify more hyperparameters):
 
+### CH-SIMS
+```
+python train.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_DEMO --datasetName sims --dataPath ./datasets/unaligned_39.pkl --fusion_layer_depth 4 --is_test 1
+```
+
 ### MOSI
 ```
 python train.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_DEMO --datasetName mosi --dataPath ./datasets/unaligned_50.pkl --fusion_layer_depth 2 --is_test 1
