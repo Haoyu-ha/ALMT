@@ -17,7 +17,7 @@ TRANSFORMERS_MAP = {
 
 
 class BertTextEncoder(nn.Module):
-    def __init__(self, use_finetune=False, transformers='bert', pretrained='bert-base-uncased'):
+    def __init__(self, use_finetune=False, transformers='bert', pretrained='./bert-base-uncased'):
         super().__init__()
 
         tokenizer_class = TRANSFORMERS_MAP[transformers][1]
@@ -25,10 +25,10 @@ class BertTextEncoder(nn.Module):
         self.tokenizer = tokenizer_class.from_pretrained(pretrained)
         self.model = model_class.from_pretrained(pretrained)
         self.use_finetune = use_finetune
-    
+
     def get_tokenizer(self):
         return self.tokenizer
-    
+
     def forward(self, text):
         """
         text: (batch_size, 3, seq_len)

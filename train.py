@@ -2,7 +2,7 @@ import os
 import torch
 import numpy as np
 from tqdm import tqdm
-from opts import *
+from opts import parse_opts
 from core.dataset import MMDataLoader
 from core.scheduler import get_scheduler
 from core.utils import AverageMeter, save_model, setup_seed
@@ -26,7 +26,7 @@ def main():
     if opt.seed is not None:
         setup_seed(opt.seed)
     print("seed: {}".format(opt.seed))
-    
+
     log_path = os.path.join(".", "log", opt.project_name)
     if os.path.exists(log_path) == False:
         os.makedirs(log_path)
@@ -42,15 +42,14 @@ def main():
     dataLoader = MMDataLoader(opt)
 
     optimizer = torch.optim.AdamW(model.parameters(),
-                                 lr=opt.lr,
-                                 weight_decay=opt.weight_decay)
+                                  lr=opt.lr,
+                                  weight_decay=opt.weight_decay)
 
     scheduler_warmup = get_scheduler(optimizer, opt)
     loss_fn = torch.nn.MSELoss()
     metrics = MetricsTop().getMetics(opt.datasetName)
 
     writer = SummaryWriter(logdir=log_path)
-
 
     for epoch in range(1, opt.n_epochs+1):
         train(model, dataLoader['train'], optimizer, loss_fn, epoch, writer, metrics)
@@ -100,7 +99,6 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
     writer.add_scalar('train/loss', losses.value_avg, epoch)
 
 
-
 def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, metrics):
     test_pbar = tqdm(enumerate(eval_loader))
 
@@ -135,7 +133,7 @@ def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, m
 
         writer.add_scalar('evaluate/loss', losses.value_avg, epoch)
 
-        save_model(save_path, epoch, model, optimizer)
+        # save_model(save_path, epoch, model, optimizer)
 
 
 def test(model, test_loader, optimizer, loss_fn, epoch, writer, metrics):
@@ -172,5 +170,11 @@ def test(model, test_loader, optimizer, loss_fn, epoch, writer, metrics):
 
         writer.add_scalar('test/loss', losses.value_avg, epoch)
 
+
 if __name__ == '__main__':
     main()
+
+'''
+test: : 11it [00:00, 24.84it/s, epoch=18, loss=0.97852, lr:=8.50e-05]
+{'Has0_acc_2': 0.8309, 'Has0_F1_score': 0.8359, 'Non0_acc_2': 0.8613, 'Non0_F1_score': 0.8645, 'Mult_acc_5': 0.5248, 'Mult_acc_7': 0.449, 'MAE': 0.7181, 'Corr': 0.7947}
+'''

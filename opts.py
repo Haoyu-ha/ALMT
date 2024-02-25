@@ -6,19 +6,20 @@
 
 import argparse
 
+
 def parse_opts():
     parser = argparse.ArgumentParser()
     arguments = {
         'dataset': [
-            dict(name='--datasetName',        
+            dict(name='--datasetName',
                  type=str,
                  default='mosi',
                  help='mosi, mosei or sims'),
             dict(name='--dataPath',
-                 default="./datasets/unaligned_50.pkl",
+                 default="/opt/data/private/Project/Datasets/MSA_Datasets/MOSI/Processed/unaligned_50.pkl",
                  type=str,
                  help=' '),
-            dict(name='--seq_lens',     
+            dict(name='--seq_lens',
                  default=[50, 50, 50],
                  type=list,
                  help=' '),
@@ -32,8 +33,8 @@ def parse_opts():
                  help=' '),
         ],
         'network': [
-            dict(name='--CUDA_VISIBLE_DEVICES',        
-                 default='6',
+            dict(name='--CUDA_VISIBLE_DEVICES',
+                 default='0',
                  type=str),
             dict(name='--fusion_layer_depth',
                  default=2,
@@ -41,11 +42,11 @@ def parse_opts():
         ],
 
         'common': [
-            dict(name='--project_name',    
-                 default='ALMT_Demo',
+            dict(name='--project_name',
+                 default='ALMT_DEMO',
                  type=str
                  ),
-           dict(name='--is_test',    
+            dict(name='--is_test',
                  default=1,
                  type=int
                  ),
