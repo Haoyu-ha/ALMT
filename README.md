@@ -20,6 +20,14 @@ MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA)
 ## Environment
 The basic training environment for the results in the paper is Pytorch 1.11.0, Python 3.7 with RTX 3090. It should be noted that different hardware and software environments can cause the results to fluctuate.
 
+## Test
+I provide a trained parameter for test. You can download it from [Google Drive](https://drive.google.com/file/d/11dYa6mmq7sbgndwe0e_FAtYkYcpjbESo/view?usp=sharing) and [Baidu Netdisk](https://pan.baidu.com/s/1E_is4cOx0DgTlZwPdzHe4g?pwd=659k).
+
+Then, put it to the specified path and run the code with the following command:
+```
+python test.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_Test_SIMS_DEMO --datasetName sims --dataPath ./datasets/unaligned_39.pkl --test_checkpoint ./checkpoint/test/SIMS_Acc7_Best.pth --fusion_layer_depth 4 
+```
+
 ## Training
 You can quickly run the code with the following command (you can refer to opts.py to modify more hyperparameters):
 
