@@ -26,7 +26,7 @@ I provide a trained parameter (the Acc-5 metric for SIMS) for test. You can down
 
 Then, put it to the specified path and run the code with the following command:
 ```
-python test.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_Test_SIMS_DEMO --datasetName sims --dataPath ./datasets/unaligned_39.pkl --test_checkpoint ./checkpoint/test/SIMS_Acc7_Best.pth --fusion_layer_depth 4 
+python test.py --CUDA_VISIBLE_DEVICES 0 --project_name ALMT_Test_SIMS_DEMO --datasetName sims --dataPath ./datasets/unaligned_39.pkl --test_checkpoint ./checkpoint/test/SIMS_Acc5_Best.pth --fusion_layer_depth 4 
 ```
 
 ## Training
