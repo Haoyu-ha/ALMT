@@ -30,6 +30,10 @@ def parse_opts():
                  default="regression",
                  type=str,
                  help=' '),
+            dict(name='--test_checkpoint',
+                 default="./checkpoint/test/SIMS_Acc7_Best.pth",
+                 type=str,
+                 help=' '),
         ],
         'network': [
             dict(name='--CUDA_VISIBLE_DEVICES',        
