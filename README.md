@@ -11,6 +11,7 @@ Pytorch implementation of paper based on  [MMSA](https://github.com/thuiar/MMSA)
 
 - [Data Preparation](#Data-preparation)
 - [Environment](#Environment)
+- [Test](#Test)
 - [Training](#Training)
 - [Citation](#Citation)
   
