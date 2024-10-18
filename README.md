@@ -8,7 +8,7 @@ Pytorch implementation of paper:
 
 
 ## Content
-
+- [Note](#Note)
 - [Data Preparation](#Data-preparation)
 - [Environment](#Environment)
 - [Training](#Training)
@@ -16,7 +16,7 @@ Pytorch implementation of paper:
 - [Citation](#Citation)
 
 
-### Note
+## Note
 
 1. Based on the experience and insights gained from the ALMT, we have futher explored robust MSA by ensuring the integrity of the dominant modality under different noise intensities. This new work has been accepted at NeurIPS 2024, welcome to [this new work](https://github.com/Haoyu-ha/LNLN).
 
