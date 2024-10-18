@@ -16,12 +16,14 @@ Pytorch implementation of paper:
 - [Citation](#Citation)
 
 
-### Latest Work
+### Note
 
-Based on the experience and insights gained from the ALMT, we have futher explored robust MSA by ensuring the integrity of the dominant modality under different noise intensities. This new work has been accepted at NeurIPS 2024, welcome to [this new work](https://github.com/Haoyu-ha/LNLN).
+1. Based on the experience and insights gained from the ALMT, we have futher explored robust MSA by ensuring the integrity of the dominant modality under different noise intensities. This new work has been accepted at NeurIPS 2024, welcome to [this new work](https://github.com/Haoyu-ha/LNLN).
+
+2. The ALMT implementation has been added to [MMSA](https://github.com/thuiar/MMSA); you can also refer to the implementation and make a fair comparison with other methods.
 
 ## Data Preparation
-MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA)
+MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA).
 
 ## Environment
 The basic training environment for the results in the paper is Pytorch 1.11.0, Python 3.7 with RTX 3090. It should be noted that different hardware and software environments can cause the results to fluctuate.

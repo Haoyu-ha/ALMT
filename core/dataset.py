@@ -4,7 +4,6 @@
 '''
 
 
-import logging
 import pickle
 import numpy as np
 import torch
@@ -12,8 +11,6 @@ from torch.utils.data import Dataset, DataLoader
 
 
 __all__ = ['MMDataLoader']
-
-logger = logging.getLogger('MSA')
 
 
 class MMDataset(Dataset):
@@ -122,7 +119,7 @@ class MMDataset(Dataset):
         return sample
 
 
-def MMDataLoader(args):
+def MMDataLoader(args):     
     datasets = {
         'train': MMDataset(args, mode='train'),
         'valid': MMDataset(args, mode='valid'),
