@@ -20,7 +20,10 @@ Pytorch implementation of paper:
 
 1. Based on the experience and insights gained from the ALMT, we have futher explored robust MSA by ensuring the integrity of the dominant modality under different noise intensities. This new work has been accepted at NeurIPS 2024, welcome to [this new work](https://github.com/Haoyu-ha/LNLN).
 
-2. The ALMT implementation has been added to [MMSA](https://github.com/thuiar/MMSA); you can also refer to the implementation and make a fair comparison with other methods.
+2. The ALMT implementation has been added to [MMSA](https://github.com/thuiar/MMSA); you can also refer to the implementation and make a fairer comparison with other methods.
+
+3.  We observed that regression metrics (such as MAE and Corr) and classification metrics (such as acc2 and F1) focus on different aspects of model performance. A model that achieves the lowest error in sentiment intensity prediction does not necessarily perform best in classification tasks. To comprehensively demonstrate the capabilities of the model, we selected the best-performing model for each type of metric, meaning that acc2/F1 and MAE correspond to different epochs of the same training process. If you wish to compare the performance of models across different metrics at the same epoch, we recommend using the implementation we added to the [MMSA](https://github.com/thuiar/MMSA) framework. This implementation allows for fairer comparisons with other methods in a consistent environment, ensuring that metrics are evaluated under the same training conditions.
+
 
 ## Data Preparation
 MOSI/MOSEI/CH-SIMS Download: See [MMSA](https://github.com/thuiar/MMSA).
