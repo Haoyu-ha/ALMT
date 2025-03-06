@@ -1,0 +1,8 @@
+einops==0.8.1
+numpy==2.2.3
+PyYAML==6.0.2
+PyYAML==6.0.2
+scikit_learn==1.6.1
+tensorboardX==2.6.2.2
+torch==2.5.1+cu121
+transformers==4.49.0

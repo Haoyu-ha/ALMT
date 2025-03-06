@@ -71,8 +71,8 @@ class GradualWarmupScheduler(_LRScheduler):
             self.step_ReduceLROnPlateau(metrics, epoch)
 
 
-def get_scheduler(optimizer, opt):
-    scheduler_steplr = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=0.9 * opt.n_epochs)
-    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=1, total_epoch=0.1 * opt.n_epochs, after_scheduler=scheduler_steplr)
+def get_scheduler(optimizer, args):
+    scheduler_steplr = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=0.9 * args.base.n_epochs)
+    scheduler_warmup = GradualWarmupScheduler(optimizer, multiplier=1, total_epoch=0.1 * args.base.n_epochs, after_scheduler=scheduler_steplr)
 
     return scheduler_warmup

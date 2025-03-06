@@ -1,74 +1,116 @@
 import os
 import torch
-import numpy as np
-from tqdm import tqdm
-from opts import *
+import argparse
 from core.dataset import MMDataLoader
 from core.scheduler import get_scheduler
-from core.utils import AverageMeter, save_model, setup_seed
+from core.utils import AverageMeter, setup_seed, results_recorder, dict_to_namespace
 from tensorboardX import SummaryWriter
 from models.almt import build_model
 from core.metric import MetricsTop
+import yaml
 
 
-opt = parse_opts()
-os.environ["CUDA_VISIBLE_DEVICES"] = opt.CUDA_VISIBLE_DEVICES
+parser = argparse.ArgumentParser() 
+parser.add_argument('--config_file', type=str, default='configs/sims.yaml') 
+parser.add_argument('--seed', type=int, default=-1) 
+parser.add_argument('--gpu_id', type=int, default=-1) 
+opt = parser.parse_args()
+print(opt)
+
+with open(opt.config_file) as f:
+    args = yaml.load(f, Loader=yaml.FullLoader)
+args = dict_to_namespace(args)
+print(args)
+
+seed = args.base.seed if opt.seed == -1 else opt.seed
+gpu_id = args.base.gpu_id if opt.gpu_id == -1 else opt.gpu_id
+
+print('-----------------args-----------------')
+print(args)
+print('-------------------------------------')
+
+gpu_id = str(gpu_id)
+os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
 USE_CUDA = torch.cuda.is_available()
 device = torch.device("cuda" if USE_CUDA else "cpu")
-print("device: {}:{}".format(device, opt.CUDA_VISIBLE_DEVICES))
-
-
-train_mae, val_mae = [], []
+print(f"Device: {device} ({gpu_id})")
 
 
 def main():
-    opt = parse_opts()
-    if opt.seed is not None:
-        setup_seed(opt.seed)
-    print("seed: {}".format(opt.seed))
-    
-    log_path = os.path.join(".", "log", opt.project_name)
-    if os.path.exists(log_path) == False:
+    setup_seed(seed)
+    log_path = os.path.join(".", "log", args.base.project_name)
+    if not os.path.exists(log_path):
         os.makedirs(log_path)
-    print("log_path :", log_path)
 
-    save_path = os.path.join(opt.models_save_root,  opt.project_name)
-    if os.path.exists(save_path) == False:
+    save_path = os.path.join(args.base.ckpt_root, args.base.project_name)
+    if not os.path.exists(save_path):
         os.makedirs(save_path)
-    print("model_save_path :", save_path)
 
-    model = build_model(opt).to(device)
+    model = build_model(args).to(device)
 
-    dataLoader = MMDataLoader(opt)
+    dataLoader = MMDataLoader(args)
 
     optimizer = torch.optim.AdamW(model.parameters(),
-                                 lr=opt.lr,
-                                 weight_decay=opt.weight_decay)
+                                 lr=args.base.lr,
+                                 weight_decay=args.base.weight_decay)
 
-    scheduler_warmup = get_scheduler(optimizer, opt)
+    scheduler_warmup = get_scheduler(optimizer, args)
+
     loss_fn = torch.nn.MSELoss()
-    metrics = MetricsTop().getMetics(opt.datasetName)
+
+    metrics_fn = MetricsTop().getMetics(args.dataset.datasetName)
+
+    training_results_recorder = results_recorder()
+    validation_results_recorder = results_recorder()
+    test_results_recorder = results_recorder()
 
     writer = SummaryWriter(logdir=log_path)
 
 
-    for epoch in range(1, opt.n_epochs+1):
-        train(model, dataLoader['train'], optimizer, loss_fn, epoch, writer, metrics)
-        evaluate(model, dataLoader['valid'], optimizer, loss_fn, epoch, writer, save_path, metrics)
-        if opt.is_test is not None:
-            test(model, dataLoader['test'], optimizer, loss_fn, epoch, writer, metrics)
+    for epoch in range(1, args.base.n_epochs+1):
+        training_ret = train(model, dataLoader['train'], optimizer, loss_fn, metrics_fn)
+        validation_ret = evaluate(model, dataLoader['valid'], loss_fn, metrics_fn)
+        test_ret = evaluate(model, dataLoader['test'], loss_fn, metrics_fn)
+
+        training_results_recorder.update(training_ret['results'], epoch)
+        validation_results_recorder.update(validation_ret['results'], epoch)
+        test_results_recorder.update(test_ret['results'], epoch)
+        best_validation_results = validation_results_recorder.get_best_results()
+        best_test_results = test_results_recorder.get_best_results()
+
+        print(f'\n----------------- Results Epoch {epoch} -----------------')
+        print(f'Learning Rate: {optimizer.state_dict()["param_groups"][0]["lr"]}')
+        print(f'Training Results: {training_ret["results"]}')
+        print(f'Validation Results: {validation_ret["results"]}')
+        print(f'Test Results: {test_ret["results"]}\n')
+        print(f'Best Validation Results across All Epochs: {best_validation_results["best_results_all_epochs"]}')
+        print(f'Best Validation Results of One Epochs: {best_validation_results["best_results_one_epoch"]}\n')
+        print(f'Best Test Results across All Epochs: {best_test_results["best_results_all_epochs"]}')
+        print(f'Best Test Results of One Epochs: {best_test_results["best_results_one_epoch"]}')
+        print('----------------------------------------------------------\n')
+
+        writer.add_scalar('train/MAE', training_ret['loss_recorder'].value_avg, epoch)
+        writer.add_scalar('valid/MAE', validation_ret['loss_recorder'].value_avg, epoch)
+        writer.add_scalar('test/MAE', test_ret['loss_recorder'].value_avg, epoch)
+
         scheduler_warmup.step()
+
+    # with open(f'./{args.dataset.datasetName}_results_all_epoch.txt', 'a+') as f:
+    #     f.write(f'{seed}: {best_test_results["best_results_all_epochs"]}\n')
+    
+    # with open(f'./{args.dataset.datasetName}_results_one_epoch.txt', 'a+') as f:
+    #     f.write(f'{seed}: {best_test_results["best_results_one_epoch"]}\n')
+
     writer.close()
 
 
-def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
-    train_pbar = tqdm(enumerate(train_loader))
-    losses = AverageMeter()
+def train(model, data_loader, optimizer, loss_fn, metrics_fn):
+    loss_recorder = AverageMeter()
 
     y_pred, y_true = [], []
 
     model.train()
-    for cur_iter, data in train_pbar:
+    for cur_iter, data in enumerate(data_loader):
         img, audio, text = data['vision'].to(device), data['audio'].to(device), data['text'].to(device)
         label = data['labels']['M'].to(device)
         label = label.view(-1, 1)
@@ -78,7 +120,7 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
 
         loss = loss_fn(output, label)
 
-        losses.update(loss.item(), batchsize)
+        loss_recorder.update(loss.item(), batchsize)
 
         loss.backward()
         optimizer.step()
@@ -87,90 +129,38 @@ def train(model, train_loader, optimizer, loss_fn, epoch, writer, metrics):
         y_pred.append(output.cpu())
         y_true.append(label.cpu())
 
-        train_pbar.set_description('train')
-        train_pbar.set_postfix({'epoch': '{}'.format(epoch),
-                                'loss': '{:.5f}'.format(losses.value_avg),
-                                'lr:': '{:.2e}'.format(optimizer.state_dict()['param_groups'][0]['lr'])})
+    pred, true = torch.cat(y_pred), torch.cat(y_true)
+    results = metrics_fn(pred, true)
+
+    return {'results': results, 'loss_recorder': loss_recorder} 
+
+
+def evaluate(model, data_loader, loss_fn, metrics_fn):
+    loss_recorder = AverageMeter()
+    y_pred, y_true = [], []
+
+    model.eval()
+    
+    for cur_iter, data in enumerate(data_loader):
+        img, audio, text = data['vision'].to(device), data['audio'].to(device), data['text'].to(device)
+        label = data['labels']['M'].to(device)
+        label = label.view(-1, 1)
+        batchsize = img.shape[0]
+
+        with torch.no_grad():
+            output = model(img, audio, text)
+
+        loss = loss_fn(output, label)
+
+        y_pred.append(output.cpu())
+        y_true.append(label.cpu())
+
+        loss_recorder.update(loss.item(), batchsize)
 
     pred, true = torch.cat(y_pred), torch.cat(y_true)
-    train_results = metrics(pred, true)
-    print('train: ', train_results)
-    train_mae.append(train_results['MAE'])
+    results = metrics_fn(pred, true)
 
-    writer.add_scalar('train/loss', losses.value_avg, epoch)
-
-
-
-def evaluate(model, eval_loader, optimizer, loss_fn, epoch, writer, save_path, metrics):
-    test_pbar = tqdm(enumerate(eval_loader))
-
-    losses = AverageMeter()
-    y_pred, y_true = [], []
-
-    model.eval()
-    with torch.no_grad():
-        for cur_iter, data in test_pbar:
-            img, audio, text = data['vision'].to(device), data['audio'].to(device), data['text'].to(device)
-            label = data['labels']['M'].to(device)
-            label = label.view(-1, 1)
-            batchsize = img.shape[0]
-
-            output = model(img, audio, text)
-
-            loss = loss_fn(output, label)
-
-            y_pred.append(output.cpu())
-            y_true.append(label.cpu())
-
-            losses.update(loss.item(), batchsize)
-
-            test_pbar.set_description('eval')
-            test_pbar.set_postfix({'epoch': '{}'.format(epoch),
-                                   'loss': '{:.5f}'.format(losses.value_avg),
-                                   'lr:': '{:.2e}'.format(optimizer.state_dict()['param_groups'][0]['lr'])})
-
-        pred, true = torch.cat(y_pred), torch.cat(y_true)
-        test_results = metrics(pred, true)
-        print(test_results)
-
-        writer.add_scalar('evaluate/loss', losses.value_avg, epoch)
-
-        save_model(save_path, epoch, model, optimizer)
-
-
-def test(model, test_loader, optimizer, loss_fn, epoch, writer, metrics):
-    test_pbar = tqdm(enumerate(test_loader))
-
-    losses = AverageMeter()
-    y_pred, y_true = [], []
-
-    model.eval()
-    with torch.no_grad():
-        for cur_iter, data in test_pbar:
-            img, audio, text = data['vision'].to(device), data['audio'].to(device), data['text'].to(device)
-            label = data['labels']['M'].to(device)
-            label = label.view(-1, 1)
-            batchsize = img.shape[0]
-
-            output = model(img, audio, text)
-
-            loss = loss_fn(output, label)
-
-            y_pred.append(output.cpu())
-            y_true.append(label.cpu())
-
-            losses.update(loss.item(), batchsize)
-
-            test_pbar.set_description('test')
-            test_pbar.set_postfix({'epoch': '{}'.format(epoch),
-                                   'loss': '{:.5f}'.format(losses.value_avg),
-                                   'lr:': '{:.2e}'.format(optimizer.state_dict()['param_groups'][0]['lr'])})
-
-        pred, true = torch.cat(y_pred), torch.cat(y_true)
-        test_results = metrics(pred, true)
-        print(test_results)
-
-        writer.add_scalar('test/loss', losses.value_avg, epoch)
+    return {'results': results, 'loss_recorder': loss_recorder} 
 
 if __name__ == '__main__':
     main()

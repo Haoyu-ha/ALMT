@@ -1,0 +1,53 @@
+base:
+  project_name: ALMT_Demo
+  ckpt_root: ./ckpt
+  seed: 0
+  lr: 0.0001
+  weight_decay: 0.0001
+  batch_size: 64
+  n_epochs: 200
+  num_workers: 8
+  gpu_id: 1
+
+dataset:
+  datasetName: mosei
+  dataPath: /workspace/datasets/MSA_Datasets/MOSEI/unaligned_50.pkl 
+  train_mode: regression
+
+model:  
+  bert_pretrained: bert-base-uncased
+
+  # Projection Layer Parameters
+  l_input_dim: 768
+  a_input_dim: 74
+  v_input_dim: 35
+  l_proj_dst_dim: 128
+  a_proj_dst_dim: 128
+  v_proj_dst_dim: 128
+
+  # Transformer Parameters
+  token_len: 8
+  token_dim: 128
+  l_input_length: 50
+  a_input_length: 500
+  v_input_length: 500
+  proj_input_dim: 128
+  proj_depth: 1
+  proj_heads: 8
+  proj_mlp_dim: 128
+
+  # Text Encoder Parameters
+  token_length: 8
+  l_enc_heads: 8
+  l_enc_mlp_dim: 128
+
+  # H Hyper Layer Parameters
+  AHL_depth: 3
+  ahl_heads: 8
+  ahl_dim_head: 16
+  ahl_droup: 0.
+
+  # Fusion Layer Parameters
+  fusion_heads: 8
+  fusion_mlp_dim: 128
+  fusion_layer_depth: 4
