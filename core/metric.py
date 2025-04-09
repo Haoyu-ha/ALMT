@@ -50,12 +50,12 @@ class MetricsTop():
         non_zeros_binary_preds = (test_preds[non_zeros] > 0)
 
         non_zeros_acc2 = accuracy_score(non_zeros_binary_preds, non_zeros_binary_truth)
-        non_zeros_f1_score = f1_score(non_zeros_binary_preds, non_zeros_binary_truth, average='weighted')
+        non_zeros_f1_score = f1_score(non_zeros_binary_truth, non_zeros_binary_preds, average='weighted')
 
         binary_truth = (test_truth >= 0)
         binary_preds = (test_preds >= 0)
         acc2 = accuracy_score(binary_preds, binary_truth)
-        f_score = f1_score(binary_preds, binary_truth, average='weighted')
+        f_score = f1_score(binary_truth, binary_preds, average='weighted')
         
         eval_results = {
             "Has0_acc_2":  round(acc2, 4),
@@ -111,7 +111,7 @@ class MetricsTop():
         mult_a2 = self.__multiclass_acc(test_preds_a2, test_truth_a2)
         mult_a3 = self.__multiclass_acc(test_preds_a3, test_truth_a3)
         mult_a5 = self.__multiclass_acc(test_preds_a5, test_truth_a5)
-        f_score = f1_score(test_preds_a2, test_truth_a2, average='weighted')
+        f_score = f1_score(test_truth_a2, test_preds_a2, average='weighted')
 
         eval_results = {
             "Mult_acc_2": mult_a2,
